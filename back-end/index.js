@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const Product = require("./db/Product");
+const PORT = process.env.PORT || 4000;
 
 app.use(express.json());
 app.use(cors());
@@ -13,7 +14,7 @@ const fetchGoldPrice = async () => {
     const requestOptions = {
         method: 'GET',
         headers: {
-            "x-access-token": "goldapi-1jlsbk17mctfiyjn-io",
+            "x-access-token": process.env.GOLD_API_KEY,
             "Content-Type": "application/json"
         }
     };
@@ -63,4 +64,6 @@ app.get("/products", async (req, res) => {
     }
 });
 
-app.listen(4000);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
