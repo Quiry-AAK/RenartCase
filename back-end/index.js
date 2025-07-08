@@ -16,27 +16,37 @@ mongoose.connect(process.env.MONGO_URI, {
 }).then(() => console.log("MongoDB connected"))
     .catch(err => console.error("MongoDB connection error:", err));
 
-const fetchGoldPrice = async () => {
-    const url = "https://www.goldapi.io/api/XAU/USD";
+let cachedGoldPrice = null;
+let lastFetchTime = 0;
+const CACHE_DURATION = 1000 * 60 * 30;
 
-    const requestOptions = {
-        method: 'GET',
-        headers: {
-            "x-access-token": process.env.GOLD_API_KEY,
-            "Content-Type": "application/json"
-        }
-    };
+const fetchGoldPrice = async () => {
+    const now = Date.now();
+
+    if (cachedGoldPrice && (now - lastFetchTime) < CACHE_DURATION) {
+        return cachedGoldPrice;
+    }
 
     try {
+        const url = "https://www.goldapi.io/api/XAU/USD";
+        const requestOptions = {
+            method: 'GET',
+            headers: {
+                "x-access-token": process.env.GOLD_API_KEY,
+                "Content-Type": "application/json"
+            }
+        };
+
         const response = await fetch(url, requestOptions);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const data = await response.json();
-
-        return data.price;
+        cachedGoldPrice = data.price;
+        lastFetchTime = now;
+        return cachedGoldPrice;
     } catch (err) {
         console.error("Error fetching gold price:", err);
-        return null;
+        return cachedGoldPrice || null;
     }
 };
 
