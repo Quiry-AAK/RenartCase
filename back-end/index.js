@@ -47,6 +47,7 @@ app.get("/products", async (req, res) => {
         if (!goldPrice) return res.status(500).json({ error: "Could not fetch gold price" });
 
         const products = await Product.find();
+        console.log("Products from DB:", products);
 
         const calculatedProducts = products.map(product => ({
             ...product._doc,
